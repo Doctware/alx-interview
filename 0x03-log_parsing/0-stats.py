@@ -1,81 +1,89 @@
 #!/usr/bin/python3
-""" this module implement log parsing """
+''' 
+Module for log parsing.
+
+This script reads lines from standard input in the following format:
+<IP Address> - [<date>] "GET /projects/260 HTTP/1.1" <status code> <file size>
+It processes each line, keeping track of:
+- The total file size across all lines.
+- The count of specific status codes (200, 301, 400, 401, 403, 404, 405, 500).
+Every 10 lines, or upon keyboard interruption (CTRL + C)
+it prints the following statistics:
+- Total file size.
+- Number of occurrences for each status code that appears at least once.
+'''
+
 import sys
 import signal
-import re
+
+# Initialize total file size and status code counts
+total = 0
+counter = 0
+sc_dict = {'200': 0, '301': 0, '400': 0, '401': 0,
+           '403': 0, '404': 0, '405': 0, '500': 0}
 
 
-# Initialize metrics
-total_file_size = 0
-status_code_count = {
-    200: 0,
-    301: 0,
-    400: 0,
-    401: 0,
-    403: 0,
-    404: 0,
-    405: 0,
-    500: 0
-}
-line_count = 0
+def print_data(total):
+    '''
+    Prints the statistics collected so far.
 
+    Args:
+        total (int): The cumulative file size from all processed lines.
 
-# Regular expression pattern for the input log line format
-log_pattern = re.compile(
-    r'(?P<ip>\d+\.\d+\.\d+\.\d+) - \[(?P<date>.*?)\] '
-    r'"GET /projects/260 HTTP/1\.1" (?P<status>\d{3}) (?P<size>\d+)'
-)
-
-
-def print_stats():
-    """
-    Prints the statistics collected so far,
-    including total file size and status code counts.
-    """
-    print(f"File size: {total_file_size}")
-    for code in sorted(status_code_count.keys()):
-        if status_code_count[code] > 0:
-            print(f"{code}: {status_code_count[code]}")
+    Output:
+        - Prints the total file size.
+        - Prints the number of occurrences
+        for each relevant status code in ascending order.
+    '''
+    print('File size: {}'.format(total))
+    for key, value in sorted(sc_dict.items()):
+        if value != 0:
+            print('{}: {}'.format(key, value))
 
 
 def signal_handler(sig, frame):
-    """
-    Signal handler for keyboard interruption (CTRL + C).
-    Prints the collected statistics before exiting.
-    """
-    print_stats()
+    '''
+    Handles the SIGINT (CTRL + C) signal.
+
+    This function is called when the user interrupts the program using
+    CTRL + C.
+    It prints the final statistics before terminating the program.
+
+    Args:
+        sig: Signal number.
+        frame: Current stack frame (unused).
+    '''
+    print_data(total)
     sys.exit(0)
 
 
-# Set up signal handling for CTRL + C
+# Attach the signal handler to handle CTRL + C (SIGINT)
 signal.signal(signal.SIGINT, signal_handler)
 
-# Process each line from stdin
-for line in sys.stdin:
-    try:
-        # Use regex to parse the line
-        match = log_pattern.match(line)
-        if match:
-            status_code = int(match.group('status'))
-            file_size = int(match.group('size'))
+try:
+    # Read each line from stdin
+    for line in sys.stdin:
+        # Split the line into components based on spaces
+        rline = line.split(" ")
+        
+        # Ensure the line has enough parts (status code and file size at the end)
+        if len(rline) > 6:
+            code = rline[-2]  # Status code
+            if code in sc_dict:
+                sc_dict[code] += 1  # Increment count for valid status code
+            filesize = int(rline[-1])  # File size
+            total += filesize  # Add to the total file size
+            counter += 1
 
-            # Update total file size
-            total_file_size += file_size
+        # Print statistics after every 10 lines
+        if counter == 10:
+            print_data(total)
+            counter = 0  # Reset the counter after printing
 
-            # Increment status code count if it's in our list
-            if status_code in status_code_count:
-                status_code_count[status_code] += 1
+except Exception as ex:
+    # Ignore malformed lines and continue processing
+    pass
 
-            # Increment line count
-            line_count += 1
-
-        # Print stats after every 10 lines
-        if line_count % 10 == 0:
-            print_stats()
-
-    except Exception as e:
-        # Skip lines that don't match the expected format
-        continue
-
-# If the program ends naturally, print final stats
-print_stats()
+finally:
+    # Print final statistics after program ends or is interrupted
+    print_data(total)
