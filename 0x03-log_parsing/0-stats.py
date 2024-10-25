@@ -2,6 +2,7 @@
 """ this module implement log parsing """
 import sys
 import signal
+import re
 
 
 # Initialize metrics
@@ -17,6 +18,13 @@ status_code_count = {
     500: 0
 }
 line_count = 0
+
+
+# Regular expression pattern for the input log line format
+log_pattern = re.compile(
+    r'(?P<ip>\d+\.\d+\.\d+\.\d+) - \[(?P<date>.*?)\] '
+    r'"GET /projects/260 HTTP/1\.1" (?P<status>\d{3}) (?P<size>\d+)'
+)
 
 
 def print_stats():
@@ -45,20 +53,13 @@ signal.signal(signal.SIGINT, signal_handler)
 # Process each line from stdin
 for line in sys.stdin:
     try:
-        # Split the line and extract the required elements
-        parts = line.split()
-        if len(parts) != 10:
-            continue
+        # Use regex to parse the line
+        match = log_pattern.match(line)
+        if match:
+            status_code = int(match.group('status'))
+            file_size = int(match.group('size'))
 
-        # Extract IP, date, request, status code, and file size
-        ip_address = parts[0]
-        date = parts[3][1:]
-        request = parts[5] + ' ' + parts[6] + ' ' + parts[7]
-        status_code = int(parts[8])
-        file_size = int(parts[9])
-
-        # Only process lines matching the specific request pattern
-        if request == '"GET /projects/260 HTTP/1.1"':
+            # Update total file size
             total_file_size += file_size
 
             # Increment status code count if it's in our list
@@ -72,7 +73,7 @@ for line in sys.stdin:
         if line_count % 10 == 0:
             print_stats()
 
-    except (ValueError, IndexError):
+    except Exception as e:
         # Skip lines that don't match the expected format
         continue
 
