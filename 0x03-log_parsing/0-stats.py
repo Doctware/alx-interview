@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-''' 
+'''
 Module for log parsing.
 
 This script reads lines from standard input in the following format:
@@ -65,8 +65,9 @@ try:
     for line in sys.stdin:
         # Split the line into components based on spaces
         rline = line.split(" ")
-        
-        # Ensure the line has enough parts (status code and file size at the end)
+
+        # Ensure the line has enough parts
+        # (status code and file size at the end)
         if len(rline) > 6:
             code = rline[-2]  # Status code
             if code in sc_dict:
