@@ -12,7 +12,7 @@ Usage:
 Where:
     - N must be an integer greater than or equal to 4.
     - If called with incorrect arguments, it prints a
-        usage message and exits with status 1.
+       usage message and exits with status 1.
     - If N is not a valid integer, it prints an error and exits with status 1.
     - If N is less than 4, it prints an error message and exits with status 1.
 
@@ -29,9 +29,9 @@ def solve_nqueens(n):
     def is_safe(board, row, col):
         """Check if a queen can be safely placed at board[row][col]."""
         for i in range(row):
-            if (board[i] == col or
-                board[i] - i == col - row or
-                board[i] + i == col + row):
+            if (board[i] == col
+                    or board[i] - i == col - row
+                    or board[i] + i == col + row):
                 return False
         return True
 
