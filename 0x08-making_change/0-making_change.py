@@ -2,7 +2,10 @@
 """
 This module provides a solution for the "making change" problem.
 
-The problem involves determining the fewest number of coins needed to meet a given total using coins of specified denominations. If it's impossible to meet the total using the available denominations, the function returns -1.
+The problem involves determining the fewest number of coins needed
+to meet a given total using coins of specified denominations.
+If it's impossible to meet the total using the available denominations,
+the function returns -1.
 """
 
 
@@ -11,7 +14,8 @@ def makeChange(coins, total):
     Determine the fewest number of coins needed to meet the given total.
 
     Args:
-        coins (list of int): A list of the values of the coins available. Each value is an integer greater than 0.
+        coins (list of int): A list of the values of the coins available.
+        Each value is an integer greater than 0.
         total (int): The target amount of money to meet using the coins.
 
     Returns:
