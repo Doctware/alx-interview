@@ -8,6 +8,7 @@ The game involves selecting prime numbers and removing their multiples,
 with the player unable to make a move losing the round.
 """
 
+
 def isWinner(x, nums):
     """
     Determines the winner of each game round and returns the overall winner.
