@@ -1,3 +1,4 @@
+#!/usr/bin/node
 const request = require('request');
 
 if (process.argv.length < 3) {
@@ -8,7 +9,6 @@ if (process.argv.length < 3) {
 const movieId = process.argv[2];
 const filmUrl = `https://swapi.dev/api/films/${movieId}/`;
 
-// Fetch the movie details using the Star Wars API
 request(filmUrl, (error, response, body) => {
   if (error) {
     console.error(error);
@@ -23,19 +23,17 @@ request(filmUrl, (error, response, body) => {
   const filmData = JSON.parse(body);
   const characterUrls = filmData.characters;
 
-  // Fetch and print each character in order
   const fetchCharacter = (url) => {
     return new Promise((resolve, reject) => {
       request(url, (err, res, body) => {
-        if (err) return reject(new Error(err)); // Reject with Error object
-        if (res.statusCode !== 200) return reject(new Error(`Failed: ${res.statusCode}`)); // Reject with Error object
+        if (err) return reject(new Error(err));
+        if (res.statusCode !== 200) return reject(new Error(`Failed: ${res.statusCode}`));
         const characterData = JSON.parse(body);
         resolve(characterData.name);
       });
     });
   };
 
-  // Handle the asynchronous requests sequentially
   (async () => {
     for (const characterUrl of characterUrls) {
       try {
